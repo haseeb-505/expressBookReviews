@@ -53,21 +53,48 @@ public_users.get('/',async (req, res) => {
 
   //Add the code for getting the book details based on ISBN (done in Task 2) using Promise callbacks or async-await with Axios.
 // Get book details based on ISBN
-public_users.get('/isbn/:isbn', async (req, res) => {
-    const isbn = req.params.isbn;
-    try {
-      // Filter books based on ISBN
-      let filtered_books = Object.entries(books)
-        .filter(([id, book]) => id === isbn)
-        .reduce((acc, [id, book]) => {
-          acc[id] = book;
-          return acc;
-        }, {});
-      res.status(200).json({ books: filtered_books });
-    } catch (error) {
-      res.status(500).json({ message: 'Error fetching book details', error: error.message });
+
+public_users.get('/isbn/:isbn', (req, res) => {
+  const isbn = req.params.isbn;
+
+  new Promise((resolve, reject) => {
+    const filtered_books = Object.entries(books)
+      .filter(([id, book]) => id === isbn)
+      .reduce((acc, [id, book]) => {
+        acc[id] = book;
+        return acc;
+      }, {});
+
+    if (Object.keys(filtered_books).length === 0) {
+      reject('No books found with this ISBN');
+    } else {
+      resolve(filtered_books);
     }
-  });
+  })
+    .then(filtered_books => {
+      res.status(200).json({ books: filtered_books });
+    })
+    .catch(error => {
+      res.status(404).json({ message: error });
+    });
+});
+
+
+// public_users.get('/isbn/:isbn', async (req, res) => {
+//     const isbn = req.params.isbn;
+//     try {
+//       // Filter books based on ISBN
+//       let filtered_books = Object.entries(books)
+//         .filter(([id, book]) => id === isbn)
+//         .reduce((acc, [id, book]) => {
+//           acc[id] = book;
+//           return acc;
+//         }, {});
+//       res.status(200).json({ books: filtered_books });
+//     } catch (error) {
+//       res.status(500).json({ message: 'Error fetching book details', error: error.message });
+//     }
+//   });
 
 // Get book details based on author
 public_users.get('/author/:author', async (req, res) => {
